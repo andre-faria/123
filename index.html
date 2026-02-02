@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Valentine Quiz 💐</title>
+<title> Ju's Valentine Quiz 💐</title>
 
 <style>
   body {
@@ -108,8 +108,8 @@
 <body>
   <!-- Fun Title -->
   <div class="quiz-title">
-    <h1>💘 The Ultimate Valentine Quiz! 💐</h1>
-    <p>Can you earn enough kisses to be my Valentine?</p>
+    <h1>💘 O quiz mais importante da tua vida! 💐</h1>
+    <p>Será que consegues? Let's find out!</p>
   </div>
 
   <!-- Quiz Card -->
@@ -118,10 +118,10 @@
 
 <script>
 const questions = [
-  { q: "Where did we first meet?", a: ["At work", "At a party", "Online", "By accident"], c: 0 },
-  { q: "What’s my favorite food?", a: ["Pizza", "Sushi", "Pasta", "Burgers"], c: 1 },
-  { q: "What do I love doing most?", a: ["Sleeping", "Traveling", "Gaming", "Cooking"], c: 1 },
-  { q: "Who is the cutest person alive?", a: ["Me", "You", "Both", "Obviously you"], c: 3 }
+  { q: "Qual foi o tema do Escape Room do nosso primeiro date?", a: ["Orfanato", "Alice", "Escobar", "Prisão"], c: 0 },
+  { q: "Restaurante onde jantamos no nosso primeiro Valentine's?", a: ["Flow", "Portarossa", "Mistu", "H3"], c: 2 },
+  { q: "Concerto que fomos ver no dia seguinte ao nosso primeiro aniversário?", a: ["Kendrick & SZA", "The Weekend", "Posty", "Taylor"], c: 2 },
+  { q: "Quem é a coisinha mais linda e fofa?", a: ["Eu", "Tu", "Nós", "Obviamente tu"], c: 3 }
 ];
 
 let index = 0, correct = 0, wrong = 0;
@@ -140,7 +140,7 @@ function renderQuestion(feedback = "") {
 function answer(i) {
   const isCorrect = i === questions[index].c;
   if (isCorrect) correct++; else wrong++;
-  renderQuestion(isCorrect ? "✅ Correct!" : "❌ FOCUS WOMAN 😤");
+  renderQuestion(isCorrect ? "✅ Correct!" : "❌ FOCA-TE MENINA! 😤");
   setTimeout(() => {
     if (wrong >= 2) failScreen();
     else { index++; if (index < questions.length) renderQuestion(); else resultScreen(); }
@@ -149,10 +149,10 @@ function answer(i) {
 
 function failScreen() {
   app.innerHTML = `
-    <h2>😔 Oops...</h2>
-    <p>You just lost a bunch of kisses 💋💋💋</p>
-    <p>Please try again</p>
-    <button onclick="restart()">Start Over</button>
+    <h2>😔 Oopsiee...</h2>
+    <p>Acabaste de perder um monte de beijos 💋💋💋</p>
+    <p>Tente novamente menina...</p>
+    <button onclick="restart()">Começar de novo</button>
   `;
 }
 
@@ -161,7 +161,7 @@ function restart() { index = 0; correct = 0; wrong = 0; renderQuestion(); }
 function resultScreen() {
   if (correct >= 3){
     app.innerHTML = `
-      <h2>🎉 You won!</h2>
+      <h2>🎉 HIHIHIHIH GANHOU!!!!!</h2>
       <p>${correct}/4 correct 💖</p>
       <h3>Will you be my Valentine?</h3>
 
@@ -228,7 +228,7 @@ function resultScreen() {
 }
 
 function yes(){
-  app.innerHTML = `<h2>💖 SHE SAID YES 💖</h2><p>Best Valentine ever 😍</p>`;
+  app.innerHTML = `<h2>💖 SHE SAID YES (QUE REMÈDIO NÂO È) 💖</h2><p>SE PREPAREEEEE 😍</p>`;
   startConfetti();
 }
 
