@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>Valentine Quiz 💐</title>
 
 <style>
@@ -53,6 +53,8 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    position: relative; /* allow absolute children if needed */
+    overflow: hidden;   /* keep runaway children inside */
   }
 
   h2 { margin-top: 0; font-size: 32px; }
@@ -70,18 +72,40 @@
     cursor: pointer;
     background: #ff4d6d;
     color: white;
-    transition: transform 0.2s;
+    transition: transform 0.2s, background 0.2s;
   }
   button:hover { background: #ff1e4d; transform: scale(1.05); }
 
+  /* Container for Yes/No so No can run around inside it */
+  .decision-wrap {
+    position: relative;
+    height: 160px;      /* space for the no button to dodge */
+    margin-top: 18px;
+  }
+
+  /* Yes button remains normal, but we place it statically */
+  #yesBtn {
+    position: relative;
+    z-index: 1;
+  }
+
   /* Properly small, dodgeable "No" button */
   #noBtn {
-    position: relative;
-    padding: 8px 16px;
+    position: absolute;       /* can move around */
+    left: 50%;                /* start centered */
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 8px 14px;        /* smaller! */
     font-size: 14px;
-    min-width: 80px;
-    height: 40px;
+    min-width: 72px;
+    height: 36px;
+    z-index: 2;
+
+    /* Override global hover zoom so it doesn't become huge */
+    transition: left 0.08s linear, top 0.08s linear, background 0.2s;
   }
+  /* Disable the scale-up on hover for #noBtn */
+  #noBtn:hover { transform: translate(-50%, -50%); }
 
   canvas { position: fixed; inset: 0; pointer-events: none; }
 </style>
@@ -109,7 +133,7 @@ const questions = [
 let index = 0, correct = 0, wrong = 0;
 const app = document.getElementById("app");
 
-function renderQuestion(feedback="") {
+function renderQuestion(feedback = "") {
   const q = questions[index];
   app.innerHTML = `
     <div class="counter">${correct}/${questions.length} correct</div>
@@ -121,12 +145,12 @@ function renderQuestion(feedback="") {
 
 function answer(i) {
   const isCorrect = i === questions[index].c;
-  if(isCorrect) correct++; else wrong++;
-  renderQuestion(isCorrect?"✅ Correct!":"❌ FOCUS WOMAN 😤");
-  setTimeout(()=>{
-    if(wrong>=2) failScreen();
-    else { index++; if(index<questions.length) renderQuestion(); else resultScreen(); }
-  },900);
+  if (isCorrect) correct++; else wrong++;
+  renderQuestion(isCorrect ? "✅ Correct!" : "❌ FOCUS WOMAN 😤");
+  setTimeout(() => {
+    if (wrong >= 2) failScreen();
+    else { index++; if (index < questions.length) renderQuestion(); else resultScreen(); }
+  }, 900);
 }
 
 function failScreen() {
@@ -138,58 +162,119 @@ function failScreen() {
   `;
 }
 
-function restart() { index=0; correct=0; wrong=0; renderQuestion(); }
+function restart() { index = 0; correct = 0; wrong = 0; renderQuestion(); }
 
 function resultScreen() {
-  if(correct>=3){
+  if (correct >= 3){
     app.innerHTML = `
       <h2>🎉 You won!</h2>
       <p>${correct}/4 correct 💖</p>
       <h3>Will you be my Valentine?</h3>
-      <button onclick="yes()">Yes 💘</button>
-      <button id="noBtn">No 💔</button>
+
+      <div class="decision-wrap" id="decisionWrap">
+        <button id="yesBtn" onclick="yes()">Yes 💘</button>
+        <button id="noBtn" type="button">No 💔</button>
+      </div>
     `;
-    document.getElementById("noBtn").addEventListener("mouseover",moveNo);
-  } else failScreen();
+
+    const wrap = document.getElementById("decisionWrap");
+    const noBtn = document.getElementById("noBtn");
+
+    // Make the No button dodge on hover and as the mouse approaches
+    const moveNo = (ev) => {
+      // Bounds of the container
+      const wrapRect = wrap.getBoundingClientRect();
+      const btnRect = noBtn.getBoundingClientRect();
+
+      // Target: either random or away from cursor
+      let targetX, targetY;
+
+      if (ev && ev.clientX != null) {
+        // Vector away from the pointer
+        const dx = btnRect.x + btnRect.width/2 - ev.clientX;
+        const dy = btnRect.y + btnRect.height/2 - ev.clientY;
+        const mag = Math.max(Math.hypot(dx, dy), 1);
+        const step = 120; // how far to jump away each time
+        targetX = btnRect.left + (dx / mag) * step;
+        targetY = btnRect.top  + (dy / mag) * step;
+      } else {
+        // Fallback random move
+        targetX = wrapRect.left + Math.random() * (wrapRect.width - btnRect.width);
+        targetY = wrapRect.top  + Math.random() * (wrapRect.height - btnRect.height);
+      }
+
+      // Clamp within wrap
+      const minX = wrapRect.left;
+      const minY = wrapRect.top;
+      const maxX = wrapRect.right - btnRect.width;
+      const maxY = wrapRect.bottom - btnRect.height;
+
+      targetX = Math.min(Math.max(targetX, minX), maxX);
+      targetY = Math.min(Math.max(targetY, minY), maxY);
+
+      // Convert to wrap-local coordinates
+      const left = targetX - wrapRect.left;
+      const top  = targetY - wrapRect.top;
+
+      noBtn.style.left = `${left + btnRect.width/2}px`;
+      noBtn.style.top  = `${top + btnRect.height/2}px`;
+      noBtn.style.transform = "translate(-50%, -50%)";
+    };
+
+    // Interactions that trigger the dodge
+    noBtn.addEventListener("mouseenter", moveNo);
+    noBtn.addEventListener("mousemove", moveNo);
+    // If she taps it on mobile, it still runs 😈
+    noBtn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      moveNo(e.touches[0]);
+    }, { passive: false });
+
+  } else {
+    failScreen();
+  }
 }
 
-function moveNo(){ 
-  this.style.transform = `translate(${Math.random()*400-200}px,${Math.random()*400-200}px)`; 
-}
-
-function yes(){ 
-  app.innerHTML = `<h2>💖 SHE SAID YES 💖</h2><p>Best Valentine ever 😍</p>`; 
-  startConfetti(); 
+function yes(){
+  app.innerHTML = `<h2>💖 SHE SAID YES 💖</h2><p>Best Valentine ever 😍</p>`;
+  startConfetti();
 }
 
 /* 🎉 CONFETTI */
-const canvas=document.getElementById("confetti");
-const ctx=canvas.getContext("2d");
-canvas.width=window.innerWidth;
-canvas.height=window.innerHeight;
-let pieces=[];
-function startConfetti(){ 
-  for(let i=0;i<300;i++) pieces.push({
-    x:Math.random()*canvas.width,
-    y:Math.random()*canvas.height,
-    r:Math.random()*6+4,
-    c:`hsl(${Math.random()*360},100%,50%)`,
-    s:Math.random()*4+2
-  }); 
+const canvas = document.getElementById("confetti");
+const ctx = canvas.getContext("2d");
+function sizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+sizeCanvas();
+window.addEventListener("resize", sizeCanvas);
+
+let pieces = [];
+function startConfetti(){
+  pieces.length = 0;
+  for(let i = 0; i < 300; i++) pieces.push({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 6 + 4,
+    c: `hsl(${Math.random()*360},100%,50%)`,
+    s: Math.random() * 4 + 2
+  });
   requestAnimationFrame(drawConfetti);
 }
-function drawConfetti(){ 
-  ctx.clearRect(0,0,canvas.width,canvas.height); 
-  pieces.forEach(p=>{
-    ctx.fillStyle=p.c; 
-    ctx.beginPath(); 
-    ctx.arc(p.x,p.y,p.r,0,Math.PI*2); 
-    ctx.fill(); 
-    p.y+=p.s; 
-    if(p.y>canvas.height)p.y=-10; 
-  }); 
+function drawConfetti(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(const p of pieces){
+    ctx.fillStyle = p.c;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fill();
+    p.y += p.s;
+    if(p.y > canvas.height) p.y = -10;
+  }
   requestAnimationFrame(drawConfetti);
 }
+
 renderQuestion();
 </script>
 
