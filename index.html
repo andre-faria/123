@@ -9,21 +9,44 @@
     margin: 0;
     height: 100vh;
     font-family: "Segoe UI", sans-serif;
-    background-image: url("https://unsplash.com/illustrations/a-pink-background-with-colorful-flowers-and-leaves-z7ac1m2ohkU?auto=format&fit=crop&w=1350&q=80"); /* background */
+
+    /* 🌸 Pink flowers background */
+    background-image: url("https://images.unsplash.com/photo-1689954547436-2c76a6a41a4e?auto=format&fit=crop&w=1350&q=80");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
   }
 
+  /* Fun title above the quiz box */
+  .quiz-title {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .quiz-title h1 {
+    font-size: 48px;
+    color: #ff4d6d;
+    text-shadow: 2px 2px 4px #fff;
+    margin: 0;
+  }
+  .quiz-title p {
+    font-size: 20px;
+    color: #fff;
+    text-shadow: 1px 1px 2px #000;
+    margin: 5px 0 0 0;
+  }
+
+  /* Quiz card */
   .card {
     background: rgba(255, 255, 255, 0.97);
     width: 90%;
-    max-width: 800px; /* MUCH bigger */
-    min-height: 600px; /* fills more vertical space */
-    padding: 60px 50px; /* more padding for breathing room */
+    max-width: 800px;
+    min-height: 600px;
+    padding: 60px 50px;
     border-radius: 35px;
     text-align: center;
     box-shadow: 0 30px 60px rgba(0,0,0,0.35);
@@ -32,27 +55,10 @@
     justify-content: center;
   }
 
-  h2 {
-    margin-top: 0;
-    font-size: 32px; /* bigger font */
-  }
-
-  h3 {
-    font-size: 24px;
-    margin-top: 30px;
-  }
-
-  .counter {
-    font-weight: bold;
-    font-size: 22px;
-    margin-bottom: 25px;
-  }
-
-  .feedback {
-    font-size: 24px;
-    margin: 25px 0;
-    min-height: 28px; /* keeps space consistent */
-  }
+  h2 { margin-top: 0; font-size: 32px; }
+  h3 { font-size: 24px; margin-top: 30px; }
+  .counter { font-weight: bold; font-size: 22px; margin-bottom: 25px; }
+  .feedback { font-size: 24px; margin: 25px 0; min-height: 28px; }
 
   button {
     margin: 15px;
@@ -66,26 +72,23 @@
     transition: transform 0.2s;
   }
 
-  button:hover {
-    background: #ff1e4d;
-    transform: scale(1.05);
-  }
+  button:hover { background: #ff1e4d; transform: scale(1.05); }
+  #noBtn { position: relative; }
 
-  #noBtn {
-    position: relative;
-  }
-
-  canvas {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-  }
+  canvas { position: fixed; inset: 0; pointer-events: none; }
 </style>
 </head>
 
 <body>
-<div class="card" id="app"></div>
-<canvas id="confetti"></canvas>
+  <!-- Fun Title -->
+  <div class="quiz-title">
+    <h1>💘 The Ultimate Valentine Quiz! 💐</h1>
+    <p>Can you earn enough kisses to be my Valentine?</p>
+  </div>
+
+  <!-- Quiz Card -->
+  <div class="card" id="app"></div>
+  <canvas id="confetti"></canvas>
 
 <script>
 const questions = [
@@ -95,12 +98,10 @@ const questions = [
   { q: "Who is the cutest person alive?", a: ["Me", "You", "Both", "Obviously you"], c: 3 }
 ];
 
-let index = 0;
-let correct = 0;
-let wrong = 0;
+let index = 0, correct = 0, wrong = 0;
 const app = document.getElementById("app");
 
-function renderQuestion(feedback = "") {
+function renderQuestion(feedback="") {
   const q = questions[index];
   app.innerHTML = `
     <div class="counter">${correct}/${questions.length} correct</div>
@@ -112,19 +113,12 @@ function renderQuestion(feedback = "") {
 
 function answer(i) {
   const isCorrect = i === questions[index].c;
-  if (isCorrect) correct++;
-  else wrong++;
-
-  renderQuestion(isCorrect ? "✅ Correct!" : "❌ FOCUS WOMAN 😤");
-
-  setTimeout(() => {
-    if (wrong >= 2) failScreen();
-    else {
-      index++;
-      if (index < questions.length) renderQuestion();
-      else resultScreen();
-    }
-  }, 900);
+  if(isCorrect) correct++; else wrong++;
+  renderQuestion(isCorrect?"✅ Correct!":"❌ FOCUS WOMAN 😤");
+  setTimeout(()=>{
+    if(wrong>=2) failScreen();
+    else { index++; if(index<questions.length) renderQuestion(); else resultScreen(); }
+  },900);
 }
 
 function failScreen() {
@@ -139,7 +133,7 @@ function failScreen() {
 function restart() { index=0; correct=0; wrong=0; renderQuestion(); }
 
 function resultScreen() {
-  if (correct >= 3) {
+  if(correct>=3){
     app.innerHTML = `
       <h2>🎉 You won!</h2>
       <p>${correct}/4 correct 💖</p>
@@ -147,44 +141,22 @@ function resultScreen() {
       <button onclick="yes()">Yes 💘</button>
       <button id="noBtn">No 💔</button>
     `;
-    document.getElementById("noBtn").addEventListener("mouseover", moveNo);
+    document.getElementById("noBtn").addEventListener("mouseover",moveNo);
   } else failScreen();
 }
 
-function moveNo() {
-  this.style.transform = `translate(${Math.random()*250-125}px,${Math.random()*250-125}px)`;
-}
+function moveNo(){ this.style.transform = `translate(${Math.random()*250-125}px,${Math.random()*250-125}px)`; }
 
-function yes() {
-  app.innerHTML = `<h2>💖 SHE SAID YES 💖</h2><p>Best Valentine ever 😍</p>`;
-  startConfetti();
-}
+function yes(){ app.innerHTML = `<h2>💖 SHE SAID YES 💖</h2><p>Best Valentine ever 😍</p>`; startConfetti(); }
 
 /* 🎉 CONFETTI */
-const canvas = document.getElementById("confetti");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-let pieces = [];
-
-function startConfetti() {
-  for (let i=0;i<300;i++) pieces.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*6+4, c: `hsl(${Math.random()*360},100%,50%)`, s: Math.random()*4+2 });
-  requestAnimationFrame(drawConfetti);
-}
-
-function drawConfetti() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  pieces.forEach(p=>{
-    ctx.fillStyle=p.c;
-    ctx.beginPath();
-    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    ctx.fill();
-    p.y += p.s;
-    if(p.y>canvas.height)p.y=-10;
-  });
-  requestAnimationFrame(drawConfetti);
-}
-
+const canvas=document.getElementById("confetti");
+const ctx=canvas.getContext("2d");
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+let pieces=[];
+function startConfetti(){ for(let i=0;i<300;i++) pieces.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*6+4,c:`hsl(${Math.random()*360},100%,50%)`,s:Math.random()*4+2}); requestAnimationFrame(drawConfetti);}
+function drawConfetti(){ ctx.clearRect(0,0,canvas.width,canvas.height); pieces.forEach(p=>{ ctx.fillStyle=p.c; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); p.y+=p.s; if(p.y>canvas.height)p.y=-10; }); requestAnimationFrame(drawConfetti);}
 renderQuestion();
 </script>
 </body>
