@@ -10,8 +10,8 @@
     height: 100vh;
     font-family: "Segoe UI", sans-serif;
 
-    /* 🌸 Pink flowers background */
-    background-image: url("ttps://plus.unsplash.com/premium_vector-1710933932779-ff33e44945d8?q=80&w=3600&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+    /* 🌷 Tulips field background */
+    background-image: url("https://images.unsplash.com/photo-1557929036-44a5d490d527?auto=format&fit=crop&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&ixlib=rb-4.1.0&q=80&w=3024");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -60,6 +60,7 @@
   .counter { font-weight: bold; font-size: 22px; margin-bottom: 25px; }
   .feedback { font-size: 24px; margin: 25px 0; min-height: 28px; }
 
+  /* Regular buttons */
   button {
     margin: 15px;
     padding: 16px 35px;
@@ -71,9 +72,14 @@
     color: white;
     transition: transform 0.2s;
   }
-
   button:hover { background: #ff1e4d; transform: scale(1.05); }
-  #noBtn { position: relative; }
+
+  /* Special smaller "No" button */
+  #noBtn {
+    position: relative;
+    padding: 10px 20px;
+    font-size: 16px;
+  }
 
   canvas { position: fixed; inset: 0; pointer-events: none; }
 </style>
@@ -145,9 +151,14 @@ function resultScreen() {
   } else failScreen();
 }
 
-function moveNo(){ this.style.transform = `translate(${Math.random()*250-125}px,${Math.random()*250-125}px)`; }
+function moveNo(){ 
+  this.style.transform = `translate(${Math.random()*250-125}px,${Math.random()*250-125}px)`; 
+}
 
-function yes(){ app.innerHTML = `<h2>💖 SHE SAID YES 💖</h2><p>Best Valentine ever 😍</p>`; startConfetti(); }
+function yes(){ 
+  app.innerHTML = `<h2>💖 SHE SAID YES 💖</h2><p>Best Valentine ever 😍</p>`; 
+  startConfetti(); 
+}
 
 /* 🎉 CONFETTI */
 const canvas=document.getElementById("confetti");
@@ -155,9 +166,30 @@ const ctx=canvas.getContext("2d");
 canvas.width=window.innerWidth;
 canvas.height=window.innerHeight;
 let pieces=[];
-function startConfetti(){ for(let i=0;i<300;i++) pieces.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*6+4,c:`hsl(${Math.random()*360},100%,50%)`,s:Math.random()*4+2}); requestAnimationFrame(drawConfetti);}
-function drawConfetti(){ ctx.clearRect(0,0,canvas.width,canvas.height); pieces.forEach(p=>{ ctx.fillStyle=p.c; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); p.y+=p.s; if(p.y>canvas.height)p.y=-10; }); requestAnimationFrame(drawConfetti);}
+function startConfetti(){ 
+  for(let i=0;i<300;i++) pieces.push({
+    x:Math.random()*canvas.width,
+    y:Math.random()*canvas.height,
+    r:Math.random()*6+4,
+    c:`hsl(${Math.random()*360},100%,50%)`,
+    s:Math.random()*4+2
+  }); 
+  requestAnimationFrame(drawConfetti);
+}
+function drawConfetti(){ 
+  ctx.clearRect(0,0,canvas.width,canvas.height); 
+  pieces.forEach(p=>{
+    ctx.fillStyle=p.c; 
+    ctx.beginPath(); 
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2); 
+    ctx.fill(); 
+    p.y+=p.s; 
+    if(p.y>canvas.height)p.y=-10; 
+  }); 
+  requestAnimationFrame(drawConfetti);
+}
 renderQuestion();
 </script>
+
 </body>
 </html>
