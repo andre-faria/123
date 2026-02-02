@@ -28,13 +28,13 @@
     margin-bottom: 20px;
   }
   .quiz-title h1 {
-    font-size: 48px;
+    font-size: 42px;
     color: #ff4d6d;
     text-shadow: 2px 2px 4px #fff;
     margin: 0;
   }
   .quiz-title p {
-    font-size: 20px;
+    font-size: 18px;
     color: #fff;
     text-shadow: 1px 1px 2px #000;
     margin: 5px 0 0 0;
@@ -43,13 +43,13 @@
   /* Quiz card */
   .card {
     background: rgba(255, 255, 255, 0.97);
-    width: 90%;
-    max-width: 800px;
-    min-height: 600px;
-    padding: 60px 50px;
-    border-radius: 35px;
+    width: 92%;
+    max-width: 780px;
+    min-height: 560px;
+    padding: 48px 40px;
+    border-radius: 28px;
     text-align: center;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.35);
+    box-shadow: 0 24px 48px rgba(0,0,0,0.3);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -57,55 +57,49 @@
     overflow: hidden;   /* keep runaway children inside */
   }
 
-  h2 { margin-top: 0; font-size: 32px; }
-  h3 { font-size: 24px; margin-top: 30px; }
-  .counter { font-weight: bold; font-size: 22px; margin-bottom: 25px; }
-  .feedback { font-size: 24px; margin: 25px 0; min-height: 28px; }
+  h2 { margin-top: 0; font-size: 28px; }
+  h3 { font-size: 22px; margin-top: 24px; }
+  .counter { font-weight: bold; font-size: 18px; margin-bottom: 18px; }
+  .feedback { font-size: 20px; margin: 18px 0; min-height: 24px; }
 
-  /* Regular buttons */
+  /* SMALLER buttons across the board */
   button {
-    margin: 15px;
-    padding: 16px 35px;
-    border-radius: 35px;
+    margin: 10px;
+    padding: 10px 18px;    /* smaller */
+    border-radius: 24px;   /* smaller */
     border: none;
-    font-size: 20px;
+    font-size: 16px;       /* smaller */
     cursor: pointer;
     background: #ff4d6d;
     color: white;
-    transition: transform 0.2s, background 0.2s;
+    transition: background 0.2s;
   }
-  button:hover { background: #ff1e4d; transform: scale(1.05); }
+  /* No scale on hover to keep hitbox tight */
+  button:hover { background: #ff1e4d; }
 
-  /* Container for Yes/No so No can run around inside it */
+  /* Decision area so No can run inside */
   .decision-wrap {
     position: relative;
-    height: 160px;      /* space for the no button to dodge */
-    margin-top: 18px;
+    height: 120px; /* room for dodging */
+    margin-top: 14px;
   }
 
-  /* Yes button remains normal, but we place it statically */
-  #yesBtn {
-    position: relative;
-    z-index: 1;
-  }
+  /* Yes is normal small */
+  #yesBtn { position: relative; z-index: 1; }
 
-  /* Properly small, dodgeable "No" button */
+  /* SUPER small, agile No button */
   #noBtn {
-    position: absolute;       /* can move around */
-    left: 50%;                /* start centered */
-    top: 50%;
+    position: absolute;
+    left: 50%; top: 50%;
     transform: translate(-50%, -50%);
-    padding: 8px 14px;        /* smaller! */
-    font-size: 14px;
-    min-width: 72px;
-    height: 36px;
+    padding: 6px 10px;     /* extra small */
+    font-size: 13px;       /* extra small */
+    min-width: 64px;       /* not too wide */
+    height: 30px;          /* low height */
     z-index: 2;
-
-    /* Override global hover zoom so it doesn't become huge */
-    transition: left 0.08s linear, top 0.08s linear, background 0.2s;
+    /* no transform scaling on hover at all */
   }
-  /* Disable the scale-up on hover for #noBtn */
-  #noBtn:hover { transform: translate(-50%, -50%); }
+  #noBtn:hover { background: #ff1e4d; }
 
   canvas { position: fixed; inset: 0; pointer-events: none; }
 </style>
@@ -180,55 +174,53 @@ function resultScreen() {
     const wrap = document.getElementById("decisionWrap");
     const noBtn = document.getElementById("noBtn");
 
-    // Make the No button dodge on hover and as the mouse approaches
-    const moveNo = (ev) => {
-      // Bounds of the container
+    // Move "No" away from pointer with a small, fast hop
+    const step = 120;     // hop distance (increase if she still catches it)
+    const radius = 90;    // start dodging when pointer is within this many px
+
+    function dodge(ev) {
       const wrapRect = wrap.getBoundingClientRect();
-      const btnRect = noBtn.getBoundingClientRect();
+      const btnRect  = noBtn.getBoundingClientRect();
+      const px = ev.clientX ?? (ev.touches && ev.touches[0]?.clientX);
+      const py = ev.clientY ?? (ev.touches && ev.touches[0]?.clientY);
+      if (px == null || py == null) return;
 
-      // Target: either random or away from cursor
-      let targetX, targetY;
+      const cx = btnRect.left + btnRect.width/2;
+      const cy = btnRect.top  + btnRect.height/2;
+      const dx = cx - px;
+      const dy = cy - py;
+      const dist = Math.hypot(dx, dy);
 
-      if (ev && ev.clientX != null) {
-        // Vector away from the pointer
-        const dx = btnRect.x + btnRect.width/2 - ev.clientX;
-        const dy = btnRect.y + btnRect.height/2 - ev.clientY;
-        const mag = Math.max(Math.hypot(dx, dy), 1);
-        const step = 120; // how far to jump away each time
-        targetX = btnRect.left + (dx / mag) * step;
-        targetY = btnRect.top  + (dy / mag) * step;
-      } else {
-        // Fallback random move
-        targetX = wrapRect.left + Math.random() * (wrapRect.width - btnRect.width);
-        targetY = wrapRect.top  + Math.random() * (wrapRect.height - btnRect.height);
-      }
+      // Only jump if the pointer is getting close
+      if (dist > radius) return;
 
-      // Clamp within wrap
-      const minX = wrapRect.left;
-      const minY = wrapRect.top;
-      const maxX = wrapRect.right - btnRect.width;
-      const maxY = wrapRect.bottom - btnRect.height;
+      const nx = dx / (dist || 1);
+      const ny = dy / (dist || 1);
 
-      targetX = Math.min(Math.max(targetX, minX), maxX);
-      targetY = Math.min(Math.max(targetY, minY), maxY);
+      // Proposed new center
+      let targetCx = cx + nx * step;
+      let targetCy = cy + ny * step;
 
-      // Convert to wrap-local coordinates
-      const left = targetX - wrapRect.left;
-      const top  = targetY - wrapRect.top;
+      // Clamp inside wrap bounds
+      const minCx = wrapRect.left + btnRect.width/2;
+      const maxCx = wrapRect.right - btnRect.width/2;
+      const minCy = wrapRect.top  + btnRect.height/2;
+      const maxCy = wrapRect.bottom - btnRect.height/2;
 
-      noBtn.style.left = `${left + btnRect.width/2}px`;
-      noBtn.style.top  = `${top + btnRect.height/2}px`;
+      targetCx = Math.min(Math.max(targetCx, minCx), maxCx);
+      targetCy = Math.min(Math.max(targetCy, minCy), maxCy);
+
+      // Convert to wrap-local (top/left are the button center)
+      noBtn.style.left = `${targetCx - wrapRect.left}px`;
+      noBtn.style.top  = `${targetCy - wrapRect.top}px`;
       noBtn.style.transform = "translate(-50%, -50%)";
-    };
+    }
 
-    // Interactions that trigger the dodge
-    noBtn.addEventListener("mouseenter", moveNo);
-    noBtn.addEventListener("mousemove", moveNo);
-    // If she taps it on mobile, it still runs 😈
-    noBtn.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-      moveNo(e.touches[0]);
-    }, { passive: false });
+    // Make it react as soon as the pointer is near
+    wrap.addEventListener("mousemove", dodge);
+    noBtn.addEventListener("mouseenter", dodge);
+    noBtn.addEventListener("mousemove", dodge);
+    noBtn.addEventListener("touchstart", (e) => { e.preventDefault(); dodge(e); }, { passive: false });
 
   } else {
     failScreen();
