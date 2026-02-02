@@ -9,64 +9,66 @@
     margin: 0;
     height: 100vh;
     font-family: "Segoe UI", sans-serif;
-
-    /* 🌹🌷 ROSES & TULIPS ONLY */
-    background-image: url("https://images.unsplash.com/photo-1518895949257-7621c3c786d7");
+    background-image: url("https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1350&q=80"); /* roses & tulips */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-
     display: flex;
     justify-content: center;
     align-items: center;
   }
 
   .card {
-    background: rgba(255, 255, 255, 0.96);
-
-    /* 📦 BIGGER QUIZ BOX */
-    padding: 50px;
-    border-radius: 30px;
-    width: 95%;
-    max-width: 650px;
-
+    background: rgba(255, 255, 255, 0.97);
+    width: 90%;
+    max-width: 800px; /* MUCH bigger */
+    min-height: 600px; /* fills more vertical space */
+    padding: 60px 50px; /* more padding for breathing room */
+    border-radius: 35px;
     text-align: center;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.35);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.35);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   h2 {
     margin-top: 0;
-    font-size: 28px;
+    font-size: 32px; /* bigger font */
   }
 
   h3 {
-    font-size: 22px;
+    font-size: 24px;
+    margin-top: 30px;
   }
 
   .counter {
     font-weight: bold;
-    font-size: 18px;
-    margin-bottom: 20px;
+    font-size: 22px;
+    margin-bottom: 25px;
   }
 
   .feedback {
-    font-size: 22px;
-    margin: 20px 0;
+    font-size: 24px;
+    margin: 25px 0;
+    min-height: 28px; /* keeps space consistent */
   }
 
   button {
-    margin: 12px;
-    padding: 14px 30px;
-    border-radius: 30px;
+    margin: 15px;
+    padding: 16px 35px;
+    border-radius: 35px;
     border: none;
-    font-size: 18px;
+    font-size: 20px;
     cursor: pointer;
     background: #ff4d6d;
     color: white;
+    transition: transform 0.2s;
   }
 
   button:hover {
     background: #ff1e4d;
+    transform: scale(1.05);
   }
 
   #noBtn {
@@ -82,38 +84,20 @@
 </head>
 
 <body>
-
 <div class="card" id="app"></div>
 <canvas id="confetti"></canvas>
 
 <script>
 const questions = [
-  {
-    q: "Where did we first meet?",
-    a: ["At work", "At a party", "Online", "By accident"],
-    c: 0
-  },
-  {
-    q: "What’s my favorite food?",
-    a: ["Pizza", "Sushi", "Pasta", "Burgers"],
-    c: 1
-  },
-  {
-    q: "What do I love doing most?",
-    a: ["Sleeping", "Traveling", "Gaming", "Cooking"],
-    c: 1
-  },
-  {
-    q: "Who is the cutest person alive?",
-    a: ["Me", "You", "Both", "Obviously you"],
-    c: 3
-  }
+  { q: "Where did we first meet?", a: ["At work", "At a party", "Online", "By accident"], c: 0 },
+  { q: "What’s my favorite food?", a: ["Pizza", "Sushi", "Pasta", "Burgers"], c: 1 },
+  { q: "What do I love doing most?", a: ["Sleeping", "Traveling", "Gaming", "Cooking"], c: 1 },
+  { q: "Who is the cutest person alive?", a: ["Me", "You", "Both", "Obviously you"], c: 3 }
 ];
 
 let index = 0;
 let correct = 0;
 let wrong = 0;
-
 const app = document.getElementById("app");
 
 function renderQuestion(feedback = "") {
@@ -121,34 +105,24 @@ function renderQuestion(feedback = "") {
   app.innerHTML = `
     <div class="counter">${correct}/${questions.length} correct</div>
     <h2>${q.q}</h2>
-    ${q.a.map((ans,i)=>`
-      <button onclick="answer(${i})">${ans}</button>
-    `).join("")}
+    ${q.a.map((ans,i)=>`<button onclick="answer(${i})">${ans}</button>`).join("")}
     <div class="feedback">${feedback}</div>
   `;
 }
 
 function answer(i) {
   const isCorrect = i === questions[index].c;
+  if (isCorrect) correct++;
+  else wrong++;
 
-  if (isCorrect) {
-    correct++;
-    renderQuestion("✅ Correct!");
-  } else {
-    wrong++;
-    renderQuestion("❌ FOCUS WOMAN 😤");
-  }
+  renderQuestion(isCorrect ? "✅ Correct!" : "❌ FOCUS WOMAN 😤");
 
   setTimeout(() => {
-    if (wrong >= 2) {
-      failScreen();
-    } else {
+    if (wrong >= 2) failScreen();
+    else {
       index++;
-      if (index < questions.length) {
-        renderQuestion();
-      } else {
-        resultScreen();
-      }
+      if (index < questions.length) renderQuestion();
+      else resultScreen();
     }
   }, 900);
 }
@@ -162,12 +136,7 @@ function failScreen() {
   `;
 }
 
-function restart() {
-  index = 0;
-  correct = 0;
-  wrong = 0;
-  renderQuestion();
-}
+function restart() { index=0; correct=0; wrong=0; renderQuestion(); }
 
 function resultScreen() {
   if (correct >= 3) {
@@ -178,25 +147,16 @@ function resultScreen() {
       <button onclick="yes()">Yes 💘</button>
       <button id="noBtn">No 💔</button>
     `;
-
-    document
-      .getElementById("noBtn")
-      .addEventListener("mouseover", moveNo);
-  } else {
-    failScreen();
-  }
+    document.getElementById("noBtn").addEventListener("mouseover", moveNo);
+  } else failScreen();
 }
 
 function moveNo() {
-  this.style.transform =
-    `translate(${Math.random()*250-125}px,${Math.random()*250-125}px)`;
+  this.style.transform = `translate(${Math.random()*250-125}px,${Math.random()*250-125}px)`;
 }
 
 function yes() {
-  app.innerHTML = `
-    <h2>💖 SHE SAID YES 💖</h2>
-    <p>Best Valentine ever 😍</p>
-  `;
+  app.innerHTML = `<h2>💖 SHE SAID YES 💖</h2><p>Best Valentine ever 😍</p>`;
   startConfetti();
 }
 
@@ -205,37 +165,27 @@ const canvas = document.getElementById("confetti");
 const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-
 let pieces = [];
 
 function startConfetti() {
-  for (let i=0;i<250;i++) {
-    pieces.push({
-      x: Math.random()*canvas.width,
-      y: Math.random()*canvas.height,
-      r: Math.random()*6+4,
-      c: `hsl(${Math.random()*360},100%,50%)`,
-      s: Math.random()*4+2
-    });
-  }
+  for (let i=0;i<300;i++) pieces.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*6+4, c: `hsl(${Math.random()*360},100%,50%)`, s: Math.random()*4+2 });
   requestAnimationFrame(drawConfetti);
 }
 
 function drawConfetti() {
   ctx.clearRect(0,0,canvas.width,canvas.height);
   pieces.forEach(p=>{
-    ctx.fillStyle = p.c;
+    ctx.fillStyle=p.c;
     ctx.beginPath();
     ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
     ctx.fill();
     p.y += p.s;
-    if (p.y > canvas.height) p.y = -10;
+    if(p.y>canvas.height)p.y=-10;
   });
   requestAnimationFrame(drawConfetti);
 }
 
 renderQuestion();
 </script>
-
 </body>
 </html>
