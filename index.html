@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title> Ju's Valentine Quiz 💐</title>
+<title> Ju's Valentine's Quiz 💐</title>
 
 <style>
   body {
@@ -140,7 +140,7 @@ function renderQuestion(feedback = "") {
 function answer(i) {
   const isCorrect = i === questions[index].c;
   if (isCorrect) correct++; else wrong++;
-  renderQuestion(isCorrect ? "✅ Correct!" : "❌ FOCA-TE MENINA! 😤");
+  renderQuestion(isCorrect ? "✅ Corretissimo!" : "❌ FOCA-TE MENINA! 😤");
   setTimeout(() => {
     if (wrong >= 2) failScreen();
     else { index++; if (index < questions.length) renderQuestion(); else resultScreen(); }
@@ -150,8 +150,8 @@ function answer(i) {
 function failScreen() {
   app.innerHTML = `
     <h2>😔 Oopsiee...</h2>
-    <p>Acabaste de perder um monte de beijos 💋💋💋</p>
-    <p>Tente novamente menina...</p>
+    <p>Acabaste de perder um monte de beijos 💋💋</p>
+    <p>Tenta novamente...</p>
     <button onclick="restart()">Começar de novo</button>
   `;
 }
@@ -175,8 +175,8 @@ function resultScreen() {
     const noBtn = document.getElementById("noBtn");
 
     // Move "No" away from pointer with a small, fast hop
-    const step = 120;     // hop distance (increase if she still catches it)
-    const radius = 90;    // start dodging when pointer is within this many px
+    const step = 130;     // hop distance (increase if she still catches it)
+    const radius = 100;    // start dodging when pointer is within this many px
 
     function dodge(ev) {
       const wrapRect = wrap.getBoundingClientRect();
@@ -228,7 +228,7 @@ function resultScreen() {
 }
 
 function yes(){
-  app.innerHTML = `<h2>💖 SHE SAID YES (QUE REMÈDIO NÂO È) 💖</h2><p>SE PREPAREEEEE 😍</p>`;
+  app.innerHTML = `<h2>💖 SHE SAID YES (QUE REMÉDIO NÂO É) 💖</h2><p>SE PREPAREEEEE 😍</p>`;
   startConfetti();
 }
 
