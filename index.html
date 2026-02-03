@@ -10,7 +10,6 @@
     height: 100vh;
     font-family: "Segoe UI", sans-serif;
 
-    /* 🌷 Tulips field background */
     background-image: url("https://images.unsplash.com/photo-1557929036-44a5d490d527?auto=format&fit=crop&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&ixlib=rb-4.1.0&q=80&w=3024");
     background-size: cover;
     background-position: center;
@@ -20,9 +19,30 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
   }
 
-  /* Fun title above the quiz box */
+  /* Floating hearts */
+  #heartsContainer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: -1;
+  }
+  .heart {
+    position: absolute;
+    color: #ff6fa8;
+    font-size: 20px;
+    opacity: 0.8;
+    animation: floatUp 6s linear forwards;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0) scale(1); opacity: 0.8; }
+    100% { transform: translateY(-120vh) scale(1.6); opacity: 0; }
+  }
+
+  /* Title */
   .quiz-title {
     text-align: center;
     margin-bottom: 20px;
@@ -40,7 +60,7 @@
     margin: 5px 0 0 0;
   }
 
-  /* Quiz card */
+  /* Card */
   .card {
     background: rgba(255, 255, 255, 0.97);
     width: 92%;
@@ -53,8 +73,8 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    position: relative; /* allow absolute children */
-    overflow: hidden;   /* keep runaway children inside */
+    position: relative;
+    overflow: hidden;
   }
 
   h2 { margin-top: 0; font-size: 28px; }
@@ -62,113 +82,155 @@
   .counter { font-weight: bold; font-size: 18px; margin-bottom: 18px; }
   .feedback { font-size: 20px; margin: 18px 0; min-height: 24px; }
 
-  /* SMALLER buttons across the board */
+  /* Buttons */
   button {
     margin: 10px;
-    padding: 10px 18px;    /* smaller */
-    border-radius: 24px;   /* smaller */
+    padding: 10px 18px;
+    border-radius: 24px;
     border: none;
-    font-size: 16px;       /* smaller */
+    font-size: 16px;
     cursor: pointer;
     background: #ff4d6d;
     color: white;
     transition: background 0.2s;
   }
-  /* Keep hitbox tight: no scale on hover */
   button:hover { background: #ff1e4d; }
 
-  /* Decision area so No can run inside */
   .decision-wrap {
     position: relative;
-    height: 120px; /* room for dodging/teleporting */
+    height: 120px;
     margin-top: 14px;
   }
 
-  /* Yes is normal small */
-  #yesBtn { position: relative; z-index: 1; }
+  #yesBtn { z-index: 1; }
 
-  /* SUPER small, agile No button */
   #noBtn {
     position: absolute;
     left: 50%; top: 50%;
     transform: translate(-50%, -50%);
-    padding: 6px 10px;     /* extra small */
-    font-size: 13px;       /* extra small */
-    min-width: 64px;       /* not too wide */
-    height: 30px;          /* low height */
+    padding: 6px 10px;
+    font-size: 13px;
+    min-width: 64px;
+    height: 30px;
     z-index: 2;
   }
-  #noBtn:hover { background: #ff1e4d; }
+
+  /* Progress bar */
+  .progress-wrapper {
+    width: 100%;
+    height: 12px;
+    background: #ffd6e5;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ff4d6d, #ff92ae);
+    transition: width 0.4s ease;
+  }
 
   canvas { position: fixed; inset: 0; pointer-events: none; }
 </style>
 </head>
 
 <body>
-  <!-- Fun Title -->
-  <div class="quiz-title">
-    <h1>💘 O quiz mais importante da sua vida, menina Juliana! 💐</h1>
-    <p>Será que consegues? Vamos descobrir!!</p>
-  </div>
 
-  <!-- Quiz Card -->
-  <div class="card" id="app"></div>
-  <canvas id="confetti"></canvas>
+<div id="heartsContainer"></div>
+
+<div class="quiz-title">
+  <h1>💘 O quiz mais importante da sua vida, menina Juliana! 💐</h1>
+  <p>Será que consegues? Vamos descobrir!!</p>
+</div>
+
+<div class="card" id="app"></div>
+<canvas id="confetti"></canvas>
 
 <script>
 /* ========= CONFIG ========= */
-const CHAOS = true; // true = TELEPORT (max chaos), false = DODGE (step away)
-const step   = 200; // only used in DODGE mode
-const radius = 110; // start dodging when pointer gets this close (DODGE mode)
+const CHAOS = true;      // true = teleport, false = dodge
+const DELAY = 2000;      // time before next question
+const step   = 200;      
+const radius = 110;
 /* ========================== */
 
 const questions = [
   { q: "Qual foi o tema do Escape Room do nosso primeiro date?", a: ["Orfanato", "Alice", "Escobar", "Prisão"], c: 0 },
   { q: "Restaurante onde jantamos no nosso primeiro Valentine's?", a: ["Flow", "Portarossa", "Mistu", "H3"], c: 2 },
   { q: "Concerto que fomos ver no dia seguinte ao nosso primeiro aniversário?", a: ["Kendrick & SZA", "The Weekend", "Posty", "Taylor"], c: 2 },
-  { q: "Quem é a coisinha mais linda e fofa?", a: ["Eu", "Tu", "Nós", "Obviamente tu"], c: 3 }
+  { q: "Quem é a coisinha mais linda e fofa?", a: ["Eu", "Tu", "Eu, obvio", "Obviamente tu"], c: 3 }
 ];
 
 let index = 0, correct = 0, wrong = 0;
 const app = document.getElementById("app");
 
+/* START SCREEN */
+function startScreen() {
+  app.innerHTML = `
+    <h2>💘 Bem-vinda ao Valentine's Quiz 💘</h2>
+    <p>Estás pronta?</p>
+    <button onclick="startQuiz()">Começar ❤️</button>
+  `;
+}
+
+function startQuiz() {
+  index = 0;
+  correct = 0;
+  wrong = 0;
+  renderQuestion();
+}
+
+/* QUESTION RENDERING */
 function renderQuestion(feedback = "") {
   const q = questions[index];
   app.innerHTML = `
+    <div class="progress-wrapper">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
     <div class="counter">${correct}/${questions.length} corretas</div>
     <h2>${q.q}</h2>
     ${q.a.map((ans,i)=>`<button onclick="answer(${i})">${ans}</button>`).join("")}
     <div class="feedback">${feedback}</div>
   `;
+
+  const progress = Math.floor((index / questions.length) * 100);
+  document.getElementById("progressBar").style.width = progress + "%";
 }
 
 function answer(i) {
   const isCorrect = i === questions[index].c;
   if (isCorrect) correct++; else wrong++;
+
   renderQuestion(isCorrect ? "✅ Corretíssimo!" : "❌ FOCA-TE MENINA! 😤");
+
   setTimeout(() => {
     if (wrong >= 2) failScreen();
-    else { index++; if (index < questions.length) renderQuestion(); else resultScreen(); }
-  }, 900);
+    else {
+      index++;
+      if (index < questions.length) renderQuestion();
+      else resultScreen();
+    }
+  }, DELAY);
 }
 
+/* FAIL */
 function failScreen() {
   app.innerHTML = `
     <h2>😔 Oopsiee...</h2>
     <p>Acabaste de perder um monte de beijos 💋💋</p>
     <p>Tenta novamente...</p>
-    <button onclick="restart()">Começar de novo</button>
+    <button onclick="startQuiz()">Começar de novo</button>
   `;
 }
 
-function restart() { index = 0; correct = 0; wrong = 0; renderQuestion(); }
-
+/* RESULT SCREEN */
 function resultScreen() {
   if (correct >= 3){
     app.innerHTML = `
       <h2>🎉 HIHIHIHIH GANHOU!!!!!</h2>
       <p>${correct}/4 corretas 💖</p>
-      <h3>Queres ser a minha Valentine?</h3>
+      <h3>Will you be my Valentine?</h3>
 
       <div class="decision-wrap" id="decisionWrap">
         <button id="yesBtn" onclick="yes()">Yes 💘</button>
@@ -180,7 +242,6 @@ function resultScreen() {
     const noBtn = document.getElementById("noBtn");
 
     if (CHAOS) {
-      // === CHAOS MODE: Teleport to random spot inside the decision area ===
       function teleport() {
         const wrapRect = wrap.getBoundingClientRect();
         const btnRect  = noBtn.getBoundingClientRect();
@@ -193,20 +254,18 @@ function resultScreen() {
         noBtn.style.transform = "translate(0, 0)";
       }
 
-      // Trigger chaos on approach/hover/move/touch
       wrap.addEventListener("mousemove", teleport);
       noBtn.addEventListener("mouseenter", teleport);
       noBtn.addEventListener("mousemove", teleport);
       noBtn.addEventListener("touchstart", (e) => { e.preventDefault(); teleport(); }, { passive: false });
 
     } else {
-      // === DODGE MODE: Step away from the pointer, clamped inside wrap ===
       function dodge(ev) {
         const wrapRect = wrap.getBoundingClientRect();
         const btnRect  = noBtn.getBoundingClientRect();
         const px = ev.clientX ?? (ev.touches && ev.touches[0]?.clientX);
         const py = ev.clientY ?? (ev.touches && ev.touches[0]?.clientY);
-        if (px == null || py == null) return;
+        if (!px) return;
 
         const cx = btnRect.left + btnRect.width/2;
         const cy = btnRect.top  + btnRect.height/2;
@@ -214,17 +273,14 @@ function resultScreen() {
         const dy = cy - py;
         const dist = Math.hypot(dx, dy);
 
-        // Only jump if the pointer is getting close
         if (dist > radius) return;
 
         const nx = dx / (dist || 1);
         const ny = dy / (dist || 1);
 
-        // Proposed new center
         let targetCx = cx + nx * step;
         let targetCy = cy + ny * step;
 
-        // Clamp inside wrap bounds
         const minCx = wrapRect.left + btnRect.width/2;
         const maxCx = wrapRect.right - btnRect.width/2;
         const minCy = wrapRect.top  + btnRect.height/2;
@@ -233,7 +289,6 @@ function resultScreen() {
         targetCx = Math.min(Math.max(targetCx, minCx), maxCx);
         targetCy = Math.min(Math.max(targetCy, minCy), maxCy);
 
-        // Convert to wrap-local (top/left are the button center)
         noBtn.style.left = `${targetCx - wrapRect.left}px`;
         noBtn.style.top  = `${targetCy - wrapRect.top}px`;
         noBtn.style.transform = "translate(-50%, -50%)";
@@ -245,19 +300,19 @@ function resultScreen() {
       noBtn.addEventListener("touchstart", (e) => { e.preventDefault(); dodge(e); }, { passive: false });
     }
 
-  } else {
-    failScreen();
-  }
+  } else failScreen();
 }
 
+/* YES */
 function yes(){
-  app.innerHTML = `<h2>💖 ELA DISSE QUE SIM (QUE REMÉDIO, NÃO É?) 💖</h2><p>PREPARA-TE 😍</p>`;
+  app.innerHTML = `<h2>💖 SHE SAID YESSS! (QUE REMÉDIO NÃO É) 💖</h2><p>SE PREPAREEEE 😍</p>`;
   startConfetti();
 }
 
-/* 🎉 CONFETTI */
+/* CONFETTI */
 const canvas = document.getElementById("confetti");
 const ctx = canvas.getContext("2d");
+
 function sizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -277,6 +332,7 @@ function startConfetti(){
   });
   requestAnimationFrame(drawConfetti);
 }
+
 function drawConfetti(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   for(const p of pieces){
@@ -290,7 +346,22 @@ function drawConfetti(){
   requestAnimationFrame(drawConfetti);
 }
 
-renderQuestion();
+/* HEARTS */
+const heartsContainer = document.getElementById("heartsContainer");
+
+function spawnHeart() {
+  const heart = document.createElement("div");
+  heart.className = "heart";
+  heart.textContent = "💗";
+  heart.style.left = Math.random() * 100 + "vw";
+  heart.style.fontSize = (Math.random() * 20 + 15) + "px";
+  heartsContainer.appendChild(heart);
+  setTimeout(() => heart.remove(), 6000);
+}
+setInterval(spawnHeart, 400);
+
+/* START QUIZ */
+startScreen();
 </script>
 
 </body>
