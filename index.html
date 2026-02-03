@@ -175,8 +175,8 @@ function resultScreen() {
     const noBtn = document.getElementById("noBtn");
 
     // Move "No" away from pointer with a small, fast hop
-    const step = 130;     // hop distance (increase if she still catches it)
-    const radius = 100;    // start dodging when pointer is within this many px
+    const step = 200;     // hop distance (increase if she still catches it)
+    const radius = 90;    // start dodging when pointer is within this many px
 
     function dodge(ev) {
       const wrapRect = wrap.getBoundingClientRect();
