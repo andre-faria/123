@@ -169,7 +169,7 @@ const app = document.getElementById("app");
 function startScreen() {
   app.innerHTML = `
     <h2>💘 Bem-vinda ao Valentine's Quiz 💘</h2>
-    <p>Estás pronta?</p>
+    <p>Será que tens o que é necessário para passar este dia com o André?</p>
     <button onclick="startQuiz()">Começar ❤️</button>
   `;
 }
@@ -202,7 +202,7 @@ function answer(i) {
   const isCorrect = i === questions[index].c;
   if (isCorrect) correct++; else wrong++;
 
-  renderQuestion(isCorrect ? "✅ Corretíssimo!" : "❌ FOCA-TE MENINA! 😤");
+  renderQuestion(isCorrect ? "✅ Está corretíssimo!" : "ERRADOOO ❌ FOCA-TE MENINA! 😤");
 
   setTimeout(() => {
     if (wrong >= 2) failScreen();
@@ -228,7 +228,7 @@ function failScreen() {
 function resultScreen() {
   if (correct >= 3){
     app.innerHTML = `
-      <h2>🎉 HIHIHIHIH GANHOU!!!!!</h2>
+      <h2>🎉 HIHIHIHIH PASSOUUU O TESTE!!!!!</h2>
       <p>${correct}/4 corretas 💖</p>
       <h3>Will you be my Valentine?</h3>
 
